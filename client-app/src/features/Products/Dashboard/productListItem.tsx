@@ -1,16 +1,27 @@
-
-import { Grid, Card, CardMedia, CardContent, CardActions, Button, Typography, TextField } from '@mui/material';
-import React from 'react'
-import { Product } from '../../../app/models/Product'
+// ProductListItem.tsx
+import React from 'react';
+import { Grid, Card, CardContent, CardActions, Button, Typography, CircularProgress } from '@mui/material';
+import { Product } from '../../../app/models/Product';
+import { useStore } from '../../../app/stores/store';
+import { observer } from 'mobx-react-lite';
 
 interface Props {
     product: Product;
 }
-export default function ProductListItem({ product }: Props) {
 
+export default observer(function ProductListItem({ product }: Props) {
+    const { productStore } = useStore();
+    const { deleteProduct } = productStore;
+
+    const handleDelete = async () => {
+        setLoadingButton(true);
+        await deleteProduct(product.id);
+        setLoadingButton(false);
+    };
+    const [loadingButton, setLoadingButton] = React.useState(false);
     return (
-        <Grid item key={product.id} xs={12} sm={6} md={4} lg={3}>
-            <Card>
+        <Grid item key={product.id}>
+            <Card style={{ position: 'relative' }}>
                 <CardContent>
                     <Typography className="CardName" variant="body1" component="div">
                         {product.name}
@@ -20,18 +31,26 @@ export default function ProductListItem({ product }: Props) {
                     </Typography>
                 </CardContent>
                 <CardActions style={{ justifyContent: 'space-between' }}>
-                    <Button size="small" variant="contained" color="primary">
+                    <Button size="small" variant="contained" color="error">
                         Details
                     </Button>
-                    <Button size="small" color="secondary">
-                        Edit
+                    <Button
+                        onClick={handleDelete}
+                        size="small"
+                        color="error"
+                        disabled={loadingButton}
+                        style={{ position: 'relative' }}
+                    > 
+                        {loadingButton ? (
+                            <CircularProgress size={24} style={{ position: 'absolute', left: '25%', color: "red" }} />
+                        ) : 
+                            'Delete'
+                        }
                     </Button>
-                    <Button size="small" color="error">
-                        Delete
-                    </Button>
+
                 </CardActions>
             </Card>
         </Grid>
-    )
+    );
+});
 
-}
